@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Home Programme Check-in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Karla:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F7F2E6; --card:#FFFFFF; --ink:#2E3B34; --ink-soft:#5B6960;
+    --teal:#5D7C63; --teal-dark:#425A47; --sage:#7FA37A; --amber:#B08A3A;
+    --terracotta:#B15A3E; --line:#E6DFC7; --radius:18px; --focus:#2F5D46;
+  }
+  *{box-sizing:border-box;}
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; } }
+  body{ margin:0; background:var(--cream); font-family:'Karla', sans-serif; color:var(--ink); display:flex; justify-content:center; padding:32px 16px; }
+  .widget{ width:100%; max-width:540px; }
+  a{ color:var(--teal-dark); }
+  .header{ margin-bottom:18px; }
+  .eyebrow{ font-family:'Quicksand', sans-serif; font-weight:600; color:var(--teal); font-size:14px; margin:0 0 4px 0; }
+  h1{ font-family:'Quicksand', sans-serif; font-weight:700; font-size:24px; margin:0 0 6px 0; color:var(--ink); outline:none; }
+  .sub{ font-size:15px; color:var(--ink-soft); margin:0; line-height:1.5; }
+  .progress-wrap{ margin:18px 0 22px 0; }
+  .progress-track{ display:flex; gap:6px; margin-bottom:6px; }
+  .progress-dot{ height:5px; flex:1; border-radius:4px; background:var(--line); transition:background 0.3s ease; }
+  .progress-dot.active{ background:var(--teal); }
+  .progress-label{ font-size:12px; color:var(--ink-soft); }
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:24px; box-shadow:0 2px 10px rgba(46,53,50,0.05); }
+  .step{ display:none; animation:fadeIn 0.25s ease; }
+  .step.visible{ display:block; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
+  fieldset{ border:none; margin:0; padding:0; }
+  legend{ font-family:'Quicksand', sans-serif; font-weight:600; font-size:15px; margin-bottom:4px; color:var(--ink); padding:0; width:100%; }
+  .required-mark{ color:var(--terracotta); }
+  .hint{ font-size:13px; color:var(--ink-soft); margin:2px 0 14px 0; }
+  .error-msg{ font-size:13px; color:var(--terracotta); margin:-8px 0 14px 0; display:none; }
+  .error-msg.visible{ display:block; }
+  label.text-label{ display:block; font-family:'Quicksand', sans-serif; font-weight:600; font-size:14.5px; margin-bottom:6px; }
+  input[type="text"], input[type="email"]{
+    width:100%; padding:11px 14px; border:1px solid var(--line); border-radius:12px;
+    font-family:'Karla', sans-serif; font-size:15px; margin-bottom:16px; background:var(--cream);
+  }
+  input[type="text"]:focus-visible, input[type="email"]:focus-visible{ outline:2px solid var(--focus); outline-offset:1px; }
+  .checklist{ display:flex; flex-direction:column; gap:10px; margin-bottom:6px; }
+  .check-item{ display:flex; align-items:center; gap:12px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; cursor:pointer; background:var(--cream); transition:border-color 0.15s ease, background 0.15s ease; }
+  .check-item:hover{ border-color:var(--teal); }
+  .check-item:has(input:focus-visible){ outline:2px solid var(--focus); outline-offset:2px; }
+  .check-item input{ width:18px; height:18px; accent-color:var(--teal); flex-shrink:0; }
+  .check-item span{ font-size:15px; }
+  .check-item.checked{ background:#EDF3EC; border-color:var(--sage); }
+  .scale{ display:flex; gap:8px; margin-bottom:6px; }
+  .scale button{ flex:1; padding:12px 4px; border:1px solid var(--line); background:var(--cream); border-radius:12px; font-family:'Karla', sans-serif; font-size:22px; cursor:pointer; transition:all 0.15s ease; }
+  .scale button:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+  .scale button.selected{ background:var(--teal); border-color:var(--teal); }
+  .scale-labels{ display:flex; justify-content:space-between; font-size:12px; color:var(--ink-soft); margin-bottom:8px; }
+  .goal-list{ display:flex; flex-direction:column; gap:16px; margin-bottom:6px; }
+  .goal-item{ border:1px solid var(--line); border-radius:12px; padding:14px; background:var(--cream); }
+  .goal-item-title{ font-size:14.5px; font-weight:600; margin:0 0 3px 0; color:var(--ink); }
+  .goal-item-sub{ font-size:12.5px; color:var(--ink-soft); margin:0 0 10px 0; }
+  .goal-scale{ display:flex; gap:6px; }
+  .goal-scale button{ flex:1; padding:8px 4px; border:1px solid var(--line); background:#fff; border-radius:10px; font-family:'Karla', sans-serif; font-size:12.5px; cursor:pointer; transition:all 0.15s ease; color:var(--ink-soft); }
+  .goal-scale button:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+  .goal-scale button.selected{ background:var(--teal); border-color:var(--teal); color:#fff; }
+  .restored-note{ font-size:12.5px; color:var(--sage); margin:-4px 0 14px 0; display:none; }
+  .restored-note.visible{ display:block; }
+  .nav-row{ display:flex; justify-content:space-between; align-items:center; margin-top:22px; }
+  button.nav-btn{ font-family:'Quicksand', sans-serif; font-weight:600; font-size:15px; padding:11px 22px; border-radius:12px; border:none; cursor:pointer; transition:opacity 0.15s ease; }
+  button.nav-btn:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+  button.nav-btn:hover:not(:disabled){ opacity:0.9; }
+  .btn-primary{ background:var(--teal); color:#fff; margin-left:auto; }
+  .btn-primary:disabled{ background:var(--line); color:var(--ink-soft); cursor:not-allowed; }
+  .btn-ghost{ background:transparent; color:var(--ink-soft); }
+  .btn-ghost:disabled{ opacity:0; cursor:default; }
+  .result-badge{ display:inline-block; padding:6px 14px; border-radius:20px; font-family:'Quicksand', sans-serif; font-weight:600; font-size:13px; margin-bottom:14px; }
+  .result-good{ background:#E9F1E8; color:var(--sage); }
+  .result-check{ background:#FBF0DC; color:var(--amber); }
+  .result-flag{ background:#F7E7E4; color:var(--terracotta); }
+  .result-title{ font-family:'Quicksand', sans-serif; font-weight:700; font-size:20px; margin:0 0 10px 0; }
+  .result-body{ font-size:15px; line-height:1.6; color:var(--ink); margin:0 0 18px 0; }
+  .result-tip{ background:var(--cream); border-left:3px solid var(--teal); padding:12px 14px; border-radius:8px; font-size:14px; margin-bottom:18px; color:var(--ink-soft); }
+  .contact-btn, .email-btn{ display:block; width:100%; text-align:center; font-family:'Quicksand', sans-serif; font-weight:600; padding:13px; border-radius:12px; text-decoration:none; margin-bottom:10px; border:none; cursor:pointer; font-size:15px; }
+  .contact-btn{ background:var(--terracotta); color:#fff; }
+  .email-btn{ background:var(--teal); color:#fff; }
+  .contact-btn:focus-visible, .email-btn:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+  .share-box{ background:var(--cream); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:16px; font-size:14px; line-height:1.5; white-space:pre-wrap; }
+  .copy-btn{ width:100%; background:transparent; color:var(--teal-dark); border:1px solid var(--line); border-radius:10px; padding:10px; font-family:'Quicksand', sans-serif; font-weight:600; font-size:14px; cursor:pointer; margin-bottom:10px; }
+  .copy-btn:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+  .copy-confirm{ font-size:13px; color:var(--sage); margin:-4px 0 16px 0; display:none; }
+  .copy-confirm.visible{ display:block; }
+  .restart-btn{ display:block; width:100%; text-align:center; background:transparent; color:var(--ink-soft); font-family:'Karla', sans-serif; font-size:14px; padding:8px; border:none; cursor:pointer; }
+  .restart-btn:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+  .privacy-box{ background:var(--cream); border:1px solid var(--line); border-radius:12px; padding:16px; font-size:13.5px; line-height:1.65; color:var(--ink-soft); margin-bottom:18px; }
+  .privacy-box strong{ color:var(--ink); }
+  .privacy-box ul{ margin:8px 0; padding-left:18px; }
+  details.privacy{ margin-top:16px; border:1px solid var(--line); border-radius:12px; padding:12px 14px; background:var(--card); font-size:13px; color:var(--ink-soft); }
+  details.privacy summary{ cursor:pointer; font-family:'Quicksand', sans-serif; font-weight:600; color:var(--ink); font-size:14px; list-style:none; }
+  details.privacy summary::-webkit-details-marker{ display:none; }
+  details.privacy summary:before{ content:"🔒 "; }
+</style>
+</head>
+<body>
+
+<div class="widget">
+  <div class="header">
+    <p class="eyebrow">Home programme check-in</p>
+    <h1 id="mainHeading" tabindex="-1">How did this week go?</h1>
+    <p class="sub" id="mainSub">A quick weekly check-in on exercises, goal progress and how things felt. Read the short privacy notice below, then it takes about ninety seconds.</p>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-track" id="progressTrack" role="progressbar" aria-valuemin="0" aria-valuemax="7" aria-valuenow="0" aria-label="Check-in progress"></div>
+    <p class="progress-label" id="progressLabel">Step 1 of 7</p>
+  </div>
+
+  <div class="card" aria-live="polite">
+
+    <!-- Step 0: Privacy notice -->
+    <div class="step visible" data-step="0">
+      <fieldset>
+        <legend>Before you start: how your information is handled</legend>
+      </fieldset>
+      <div class="privacy-box">
+        <p><strong>What we collect:</strong> a patient code (not your child's full name), your name, your email, your physiotherapist's email, and your answers about exercises, goals, mood and any concerns.</p>
+        <p><strong>Why:</strong> so your check-in can be linked to the right file and, if you choose, sent to the correct physiotherapist.</p>
+        <p><strong>Where it goes:</strong> nowhere, by default. Everything runs in your browser only. Nothing is uploaded, stored on a server, or seen by us. The only way anything leaves this page is if you press "Email your physiotherapist," which opens your own email app with the summary pre-filled — you decide whether to send it.</p>
+        <p><strong>How long it's kept:</strong> your check-in answers exist only for this session and are cleared when you close the page. Your exercise and goal history is saved <em>only on this device</em> (browser local storage) under your patient code, so it can show your progress next time — it is never sent anywhere automatically and you can clear it any time by clearing your browser data.</p>
+        <p><strong>Your rights:</strong> you can stop at any point by simply closing this page — nothing is submitted unless you actively send the email yourself. See the full <a href="#privacy-policy">privacy policy</a> for more detail on data handling across the wider website.</p>
+      </div>
+      <div class="nav-row">
+        <button class="nav-btn btn-ghost" disabled>Back</button>
+        <button class="nav-btn btn-primary" data-action="goto" data-target="1">I understand, continue</button>
+      </div>
+    </div>
+
+    <!-- Step 1: identifiers -->
+    <div class="step" data-step="1">
+      <fieldset>
+        <legend>Who is this check-in for? <span class="required-mark">*</span></legend>
+        <p class="hint">Use the patient code your physiotherapist gave you — not your child's full name.</p>
+      </fieldset>
+      <label class="text-label" for="patientCode">Patient code</label>
+      <input type="text" id="patientCode" placeholder="e.g. JS-04" autocomplete="off">
+
+      <label class="text-label" for="caregiverName">Your name (caregiver)</label>
+      <input type="text" id="caregiverName" placeholder="e.g. Maria" autocomplete="off">
+
+      <label class="text-label" for="physioEmail">Physiotherapist's email</label>
+      <input type="email" id="physioEmail" placeholder="e.g. therapist@clinic.com" autocomplete="off">
+
+      <p class="hint" style="margin-top:-8px;">Only used if you choose to email your results at the end. Not stored anywhere.</p>
+      <p class="error-msg" id="step1Error">Please add a patient code before continuing.</p>
+      <div class="nav-row">
+        <button class="nav-btn btn-ghost" data-action="goto" data-target="0">Back</button>
+        <button class="nav-btn btn-primary" data-action="validate-step1">Next</button>
+      </div>
+    </div>
+
+    <!-- Step 2: exercises -->
+    <div class="step" data-step="2">
+      <fieldset>
+        <legend>Which exercises did you manage this week?</legend>
+        <p class="hint">Tick everything you got to, even once or twice.</p>
+        <p class="restored-note" id="exerciseRestoredNote">Loaded your saved progress for this patient code.</p>
+        <div class="checklist" id="exerciseList" role="group" aria-label="Exercises completed this week">
+          <label class="check-item"><input type="checkbox" value="Stretching routine"><span>Stretching routine</span></label>
+          <label class="check-item"><input type="checkbox" value="Balance &amp; sitting practice"><span>Balance &amp; sitting practice</span></label>
+          <label class="check-item"><input type="checkbox" value="Reaching &amp; grasping play"><span>Reaching &amp; grasping play</span></label>
+          <label class="check-item"><input type="checkbox" value="Walking / mobility practice"><span>Walking / mobility practice</span></label>
+          <label class="check-item"><input type="checkbox" value="Positioning during daily routines"><span>Positioning during daily routines</span></label>
+        </div>
+      </fieldset>
+      <p class="hint" style="margin-top:12px;">In the full product, this list shows your child's own assigned exercises instead of this example set.</p>
+      <div class="nav-row">
+        <button class="nav-btn btn-ghost" data-action="goto" data-target="1">Back</button>
+        <button class="nav-btn btn-primary" data-action="goto" data-target="3">Next</button>
+      </div>
+    </div>
+
+    <!-- Step 3: goal / milestone progress -->
+    <div class="step" data-step="3">
+      <fieldset>
+        <legend>How is progress toward this week's therapy goals?</legend>
+        <p class="hint">Rate each goal your therapist is currently tracking. "Not yet" is useful information too.</p>
+        <p class="restored-note" id="goalRestoredNote">Loaded your saved goal progress for this patient code.</p>
+        <div class="goal-list" id="goalList" role="group" aria-label="Goal and milestone progress">
+          <div class="goal-item" data-goal="sitting">
+            <p class="goal-item-title">Sit independently for 30 seconds</p>
+            <p class="goal-item-sub">Gross motor / trunk control goal</p>
+            <div class="goal-scale" role="radiogroup" aria-label="Progress on: sit independently for 30 seconds">
+              <button type="button" data-val="0" role="radio" aria-checked="false">Not yet</button>
+              <button type="button" data-val="1" role="radio" aria-checked="false">Emerging</button>
+              <button type="button" data-val="2" role="radio" aria-checked="false">Achieved</button>
+            </div>
+          </div>
+          <div class="goal-item" data-goal="grasp">
+            <p class="goal-item-title">Reach and grasp objects with the affected hand</p>
+            <p class="goal-item-sub">Fine motor / upper limb goal</p>
+            <div class="goal-scale" role="radiogroup" aria-label="Progress on: reach and grasp objects with the affected hand">
+              <button type="button" data-val="0" role="radio" aria-checked="false">Not yet</button>
+              <button type="button" data-val="1" role="radio" aria-checked="false">Emerging</button>
+              <button type="button" data-val="2" role="radio" aria-checked="false">Achieved</button>
+            </div>
+          </div>
+          <div class="goal-item" data-goal="steps">
+            <p class="goal-item-title">Take steps with support</p>
+            <p class="goal-item-sub">Mobility goal</p>
+            <div class="goal-scale" role="radiogroup" aria-label="Progress on: take steps with support">
+              <button type="button" data-val="0" role="radio" aria-checked="false">Not yet</button>
+              <button type="button" data-val="1" role="radio" aria-checked="false">Emerging</button>
+              <button type="button" data-val="2" role="radio" aria-checked="false">Achieved</button>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+      <p class="hint" style="margin-top:2px;">In the full product, these goals are set by your child's physiotherapist.</p>
+      <div class="nav-row">
+        <button class="nav-btn btn-ghost" data-action="goto" data-target="2">Back</button>
+        <button class="nav-btn btn-primary" data-action="goto" data-target="4">Next</button>
+      </div>
+    </div>
+
+    <!-- Step 4: difficulty -->
+    <div class="step" data-step="4">
+      <fieldset>
+        <legend>Overall, how did the exercises feel this week? <span class="required-mark">*</span></legend>
+        <p class="hint">Think about your child's reaction, not just whether you finished the list.</p>
+        <div class="scale" id="difficultyScale" role="radiogroup" aria-label="How the exercises felt this week">
+          <button type="button" data-val="0" role="radio" aria-checked="false" aria-label="Easy and calm">🙂</button>
+          <button type="button" data-val="1" role="radio" aria-checked="false" aria-label="Mostly fine">😐</button>
+          <button type="button" data-val="2" role="radio" aria-checked="false" aria-label="Somewhat hard">😕</button>
+          <button type="button" data-val="3" role="radio" aria-checked="false" aria-label="Hard or upsetting">😣</button>
+        </div>
+        <div class="scale-labels"><span>Easy &amp; calm</span><span>Hard / upsetting</span></div>
+      </fieldset>
+      <p class="error-msg" id="difficultyError">Please choose one option before continuing.</p>
+      <div class="nav-row">
+        <button class="nav-btn btn-ghost" data-action="goto" data-target="3">Back</button>
+        <button class="nav-btn btn-primary" data-action="validate-and-go" data-target="5">Next</button>
+      </div>
+    </div>
+
+    <!-- Step 5: concerns -->
+    <div class="step" data-step="5">
+      <fieldset>
+        <legend>Did any of these come up this week?</legend>
+        <p class="hint">Select any that apply, or none at all. These help decide whether to flag your therapist right away.</p>
+        <div class="checklist" id="concernList" role="group" aria-label="Concerns this week">
+          <label class="check-item"><input type="checkbox" value="new_pain" data-flag="true"><span>New pain or discomfort during or after exercises</span></label>
+          <label class="check-item"><input type="checkbox" value="regression" data-flag="true"><span>A skill seemed to get harder, not easier</span></label>
+          <label class="check-item"><input type="checkbox" value="refusal" data-flag="true"><span>Strong refusal or distress during exercises</span></label>
+          <label class="check-item"><input type="checkbox" value="sleep" data-flag="false"><span>Sleep or mood has been harder than usual</span></label>
+          <label class="check-item"><input type="checkbox" value="other" data-flag="false"><span>Something else I'd like to mention</span></label>
+        </div>
+      </fieldset>
+      <div class="nav-row">
+        <button class="nav-btn btn-ghost" data-action="goto" data-target="4">Back</button>
+        <button class="nav-btn btn-primary" data-action="show-result">See my check-in result</button>
+      </div>
+    </div>
+
+    <!-- Step 6: result -->
+    <div class="step" data-step="6" id="resultStep"></div>
+
+  </div>
+
+  <details class="privacy">
+    <summary>Full data handling details</summary>
+    <p>This tool stores exercise and goal check-marks locally on your device only, under the patient code you enter, so your progress shows up again next visit. This local data never leaves your device automatically. Emailing your results is entirely optional and initiated by you. This is not medical advice and does not replace guidance from your physiotherapist. See the full <a href="#privacy-policy">privacy policy</a> in the website footer for details on legal basis, retention, and your rights under GDPR.</p>
+  </details>
+</div>
+
+<script>
+  const TOTAL_STEPS = 7;
+  let current = 0;
+  let difficultyValue = null;
+
+  function buildProgress(){
+    const track = document.getElementById('progressTrack');
+    track.innerHTML = '';
+    for(let i=0;i<=TOTAL_STEPS;i++){
+      const dot = document.createElement('div');
+      dot.className = 'progress-dot';
+      dot.id = 'dot-'+i;
+      track.appendChild(dot);
+    }
+  }
+  buildProgress();
+
+  function updateProgress(){
+    for(let i=0;i<=TOTAL_STEPS;i++){
+      document.getElementById('dot-'+i).classList.toggle('active', i<=current);
+    }
+    document.getElementById('progressTrack').setAttribute('aria-valuenow', current);
+    const label = current >= TOTAL_STEPS ? 'Your result' : `Step ${current+1} of ${TOTAL_STEPS}`;
+    document.getElementById('progressLabel').textContent = label;
+  }
+
+  function goTo(stepIndex){
+    document.querySelectorAll('.step').forEach(s=>s.classList.remove('visible'));
+    document.querySelector('.step[data-step="'+stepIndex+'"]').classList.add('visible');
+    current = stepIndex;
+    updateProgress();
+    document.getElementById('mainHeading').focus();
+    if(stepIndex === 2 || stepIndex === 3){ loadSavedProgress(); }
+  }
+
+  function validateStep1(){
+    const code = document.getElementById('patientCode').value.trim();
+    if(!code){
+      document.getElementById('step1Error').classList.add('visible');
+      return;
+    }
+    document.getElementById('step1Error').classList.remove('visible');
+    goTo(2);
+  }
+
+  function validateAndGo(stepIndex){
+    if(difficultyValue === null){
+      document.getElementById('difficultyError').classList.add('visible');
+      return;
+    }
+    document.getElementById('difficultyError').classList.remove('visible');
+    goTo(stepIndex);
+  }
+
+  document.querySelectorAll('#exerciseList input[type="checkbox"], #concernList input[type="checkbox"]').forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      cb.closest('.check-item').classList.toggle('checked', cb.checked);
+      saveProgress();
+    });
+  });
+
+  const goalValues = {};
+  const goalLabels = {
+    sitting: 'Sit independently for 30 seconds',
+    grasp: 'Reach and grasp objects with the affected hand',
+    steps: 'Take steps with support'
+  };
+  document.querySelectorAll('.goal-item').forEach(item=>{
+    const goalId = item.dataset.goal;
+    item.querySelectorAll('.goal-scale button').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        item.querySelectorAll('.goal-scale button').forEach(b=>{
+          b.classList.remove('selected'); b.setAttribute('aria-checked','false');
+        });
+        btn.classList.add('selected');
+        btn.setAttribute('aria-checked','true');
+        goalValues[goalId] = parseInt(btn.dataset.val);
+        saveProgress();
+      });
+    });
+  });
+
+  document.querySelectorAll('#difficultyScale button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('#difficultyScale button').forEach(b=>{
+        b.classList.remove('selected'); b.setAttribute('aria-checked','false');
+      });
+      btn.classList.add('selected');
+      btn.setAttribute('aria-checked','true');
+      difficultyValue = parseInt(btn.dataset.val);
+      document.getElementById('difficultyError').classList.remove('visible');
+    });
+  });
+
+  // --- Local, per-device progress tracking, keyed by patient code ---
+  function storageKey(){
+    const code = document.getElementById('patientCode').value.trim();
+    return code ? 'checkin_progress_' + code : null;
+  }
+
+  function saveProgress(){
+    try{
+      const key = storageKey();
+      if(!key) return;
+      const exerciseState = Array.from(document.querySelectorAll('#exerciseList input')).map(cb=>cb.checked);
+      const data = { exerciseState, goalValues, updated: new Date().toISOString() };
+      localStorage.setItem(key, JSON.stringify(data));
+    }catch(e){ /* storage unavailable, fail silently */ }
+  }
+
+  function loadSavedProgress(){
+    try{
+      const key = storageKey();
+      if(!key) return;
+      const raw = localStorage.getItem(key);
+      if(!raw) return;
+      const data = JSON.parse(raw);
+      if(data.exerciseState){
+        const boxes = document.querySelectorAll('#exerciseList input');
+        boxes.forEach((cb,i)=>{
+          if(data.exerciseState[i]){
+            cb.checked = true;
+            cb.closest('.check-item').classList.add('checked');
+          }
+        });
+        document.getElementById('exerciseRestoredNote').classList.add('visible');
+      }
+      if(data.goalValues){
+        Object.keys(data.goalValues).forEach(id=>{
+          goalValues[id] = data.goalValues[id];
+          const item = document.querySelector('.goal-item[data-goal="'+id+'"]');
+          if(item){
+            const btn = item.querySelector('.goal-scale button[data-val="'+data.goalValues[id]+'"]');
+            if(btn){ btn.classList.add('selected'); btn.setAttribute('aria-checked','true'); }
+          }
+        });
+        if(Object.keys(data.goalValues).length){
+          document.getElementById('goalRestoredNote').classList.add('visible');
+        }
+      }
+    }catch(e){ /* storage unavailable or corrupt, ignore */ }
+  }
+
+  function showResult(){
+    const code = document.getElementById('patientCode').value.trim() || 'Not specified';
+    const caregiverName = document.getElementById('caregiverName').value.trim();
+    const physioEmail = document.getElementById('physioEmail').value.trim();
+
+    const exerciseBoxes = Array.from(document.querySelectorAll('#exerciseList input'));
+    const checkedExercises = exerciseBoxes.filter(cb=>cb.checked).map(cb=>cb.value);
+    const missedExercises = exerciseBoxes.filter(cb=>!cb.checked).map(cb=>cb.value);
+    const completionRatio = exerciseBoxes.length ? checkedExercises.length / exerciseBoxes.length : 0;
+    const pct = Math.round(completionRatio * 100);
+
+    const concernBoxes = Array.from(document.querySelectorAll('#concernList input'));
+    const checkedConcerns = concernBoxes.filter(cb=>cb.checked);
+    const redFlags = checkedConcerns.filter(cb=>cb.dataset.flag === 'true').map(cb=>cb.value);
+    const softFlags = checkedConcerns.filter(cb=>cb.dataset.flag === 'false').map(cb=>cb.value);
+
+    const diff = difficultyValue === null ? 1 : difficultyValue;
+
+    const goalIds = Object.keys(goalLabels);
+    const answeredGoals = goalIds.filter(id => goalValues[id] !== undefined);
+    const goalsProgressing = answeredGoals.filter(id => goalValues[id] >= 1);
+    const goalsNotYet = answeredGoals.filter(id => goalValues[id] === 0);
+    const allGoalsStalled = answeredGoals.length > 0 && goalsProgressing.length === 0;
+
+    let tier;
+    if(redFlags.length > 0){ tier = 'flag'; }
+    else if(completionRatio < 0.4 || diff >= 2 || softFlags.length > 0 || allGoalsStalled){ tier = 'check'; }
+    else { tier = 'good'; }
+
+    const flagLabels = { new_pain:'new pain', regression:'a skill feeling harder than before', refusal:'refusal or distress during exercises' };
+    const specificRedFlagText = redFlags.map(f=>flagLabels[f]).join(' and ');
+
+    let goalSentence = '';
+    if(answeredGoals.length > 0){
+      goalSentence = ` On goals: ${goalsProgressing.length} of ${answeredGoals.length} are emerging or achieved this week.`;
+      if(goalsNotYet.length > 0 && !allGoalsStalled){
+        goalSentence += ` "${goalLabels[goalsNotYet[0]]}" hasn't moved yet — worth flagging at your next session.`;
+      }
+    }
+
+    let badgeClass, badgeText, title, body, tip, showContact;
+
+    if(tier === 'good'){
+      badgeClass = 'result-good'; badgeText = 'On track';
+      title = `Great week!`;
+      body = `You completed ${pct}% of the planned exercises this week, and it felt manageable.${goalSentence} Keep going at this pace.`;
+      tip = missedExercises.length
+        ? `Tip: "${missedExercises[0]}" was the one that didn't happen. If it keeps getting skipped, mention it at your next session.`
+        : 'Tip: try slotting one exercise into a routine you already do every day so it becomes automatic.';
+      showContact = false;
+    } else if(tier === 'check'){
+      badgeClass = 'result-check'; badgeText = 'Worth a mention';
+      title = `A trickier week — that's completely normal`;
+      body = `You completed ${pct}% of the exercises.${goalSentence} ${softFlags.includes('sleep') ? `Sleep and mood being harder than usual can affect how exercises go too.` : allGoalsStalled ? `None of this week's goals moved forward, which happens and is worth discussing.` : `Some parts felt harder than usual — useful information, not a setback.`}`;
+      tip = 'Tip: jot down which exercise or goal felt hardest and when. Bring it up at your next session.';
+      showContact = false;
+    } else {
+      badgeClass = 'result-flag'; badgeText = 'Please reach out';
+      title = `Let's loop in your physiotherapist`;
+      body = `You mentioned ${specificRedFlagText || 'something that stood out'} this week.${goalSentence} Contact your physiotherapist before the next scheduled session rather than waiting.`;
+      tip = redFlags.includes('new_pain')
+        ? 'In the meantime, pause the specific exercise that caused pain and continue with the others as tolerated.'
+        : 'In the meantime, there is no need to push through exercises that cause distress.';
+      showContact = true;
+    }
+
+    const goalStatusLabels = ['Not yet','Emerging','Achieved'];
+    const goalSummaryLines = answeredGoals.length
+      ? answeredGoals.map(id => `  - ${goalLabels[id]}: ${goalStatusLabels[goalValues[id]]}`).join('\n')
+      : '  - Not rated this week';
+
+    const dateStr = new Date().toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
+    const summaryText =
+`Weekly check-in — ${dateStr}
+Patient code: ${code}
+Caregiver: ${caregiverName || 'Not specified'}
+Exercises completed: ${checkedExercises.length}/${exerciseBoxes.length} (${checkedExercises.join(', ') || 'none'})
+Not completed: ${missedExercises.join(', ') || 'none'}
+Goal progress:
+${goalSummaryLines}
+How the week felt: ${['Easy & calm','Mostly fine','Somewhat hard','Hard / upsetting'][diff]}
+Concerns noted: ${checkedConcerns.map(cb=>cb.value).join(', ') || 'none'}
+Result: ${badgeText}`;
+
+    window.__summaryText = summaryText;
+
+    const mailtoHref = physioEmail
+      ? `mailto:${encodeURIComponent(physioEmail)}?subject=${encodeURIComponent('Weekly check-in — patient '+code)}&body=${encodeURIComponent(summaryText)}`
+      : null;
+
+    const resultStep = document.getElementById('resultStep');
+    resultStep.innerHTML = `
+      <span class="result-badge ${badgeClass}">${badgeText}</span>
+      <h2 class="result-title">${title}</h2>
+      <p class="result-body">${body}</p>
+      <div class="result-tip">${tip}</div>
+      <p class="hint" style="margin-bottom:8px;">Summary for your physiotherapist:</p>
+      <div class="share-box">${summaryText}</div>
+      <button class="copy-btn" data-action="copy-summary">Copy summary</button>
+      <p class="copy-confirm" id="copyConfirm" role="status">Copied to clipboard.</p>
+      ${mailtoHref ? `<a href="${mailtoHref}" class="email-btn">Email your physiotherapist now</a>` : `<p class="hint">Add your physiotherapist's email on the previous screen to enable one-tap emailing.</p>`}
+      ${showContact ? '' : ''}
+      <button class="restart-btn" data-action="restart">Do another check-in</button>
+    `;
+
+    document.querySelectorAll('.step').forEach(s=>s.classList.remove('visible'));
+    resultStep.classList.add('visible');
+    current = TOTAL_STEPS;
+    updateProgress();
+    document.getElementById('mainHeading').focus();
+    saveProgress();
+  }
+
+  function copySummary(){
+    navigator.clipboard.writeText(window.__summaryText || '').then(()=>{
+      document.getElementById('copyConfirm').classList.add('visible');
+    }).catch(()=>{
+      document.getElementById('copyConfirm').textContent = 'Select and copy the text above manually.';
+      document.getElementById('copyConfirm').classList.add('visible');
+    });
+  }
+
+  // Delegated click handling for every interactive control, instead of inline onclick
+  // attributes — this makes the widget work reliably when embedded through hosts
+  // (e.g. Wix's HTML embed) or viewers that strip inline event-handler attributes.
+  document.addEventListener('click', function(e){
+    const el = e.target.closest('[data-action]');
+    if(!el) return;
+    const action = el.dataset.action;
+    const target = el.dataset.target !== undefined ? parseInt(el.dataset.target) : null;
+
+    if(action === 'goto'){ goTo(target); }
+    else if(action === 'validate-step1'){ validateStep1(); }
+    else if(action === 'validate-and-go'){ validateAndGo(target); }
+    else if(action === 'show-result'){ showResult(); }
+    else if(action === 'copy-summary'){ copySummary(); }
+    else if(action === 'restart'){ location.reload(); }
+  });
+</script>
+
+</body>
+</html>
